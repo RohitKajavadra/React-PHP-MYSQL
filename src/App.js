@@ -1,25 +1,63 @@
-import logo from './logo.svg';
-import './App.css';
+// eslint-disable-next-line
+import Home from "../src/component/Home/Home/Home";
+import { Routes, Route } from "react-router-dom";
+import React, { createContext, useEffect, useState } from "react";
+import Dashboard from "./component/Dashoboard/Dashboard/Dashboard";
+import { getDecodedUser } from "./component/Login/LoginManager";
+import LoginModal from "./component/Login/LoginModal";
+import PrivateRoute from "./component/Login/PrivateRoute";
+import NotFound from "./component/NotFound";
+export const UserContext = createContext();
 
-function App() {
+const App = () => {
+  const [admin, setAdmin] = useState(0);
+  const [selectedService, setSelectedService] = useState({});
+  const [user, setUser] = useState(getDecodedUser());
+  const [userImage, setUserImage] = useState("");
+  useEffect(() => {
+    const isAdmin = localStorage.getItem("isAdmin");
+    if (isAdmin != 0 && isAdmin != null) {
+      setAdmin(1);
+    }
+  }, [admin]);
+
+  useEffect(() => {
+    const image = localStorage.getItem("userImage");
+    if (image != null) {
+      setUserImage(image);
+    }
+  }, [userImage]);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <UserContext.Provider
+      value={{
+        user,
+        setUser,
+        admin,
+        setAdmin,
+        selectedService,
+        userImage,
+        setSelectedService,
+        setUserImage,
+      }}
+    >
+      <div>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/" />
+          <Route path="/login" element={<LoginModal />} />
+          <Route
+            path="/dashboard/*"
+            element={
+              <PrivateRoute redirectTo="/login">
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </UserContext.Provider>
   );
-}
+};
 
 export default App;
